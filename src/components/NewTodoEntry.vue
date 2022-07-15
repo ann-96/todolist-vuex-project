@@ -25,7 +25,7 @@
 import { defineComponent, ref } from 'vue'
 import { useStore } from '@/store'
 import { TodoEntry } from '@/store/state'
-import { MutationType } from '@/store/mutations'
+import { ActionTypes } from '@/store/actions'
 export default defineComponent({
   setup() {
     const text = ref('')
@@ -37,7 +37,7 @@ export default defineComponent({
         text: text.value,
         completed: false
       }
-      store.commit(MutationType.CreateTodoEntry, TodoEntry)
+      store.dispatch(ActionTypes.CreateTodoEntry, TodoEntry)
       text.value = ''
     }
     return { createTask, text }
