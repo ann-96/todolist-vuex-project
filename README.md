@@ -1,4 +1,8 @@
 # vuex-project
+This is a simple todo list app that uses Vue3, Vuex and Typescript at the front end and Golang with Postgres on the back end.
+It was created to learn and practice and to showcase what I have learned so far.
+You can find the back end(written in Go) here:
+<a href="https://github.com/ann-96/todolist-backend/">link</a>
 
 ## Project setup
 ```
