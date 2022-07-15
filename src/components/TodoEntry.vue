@@ -26,9 +26,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-
 import { useStore } from '@/store'
-import { MutationType } from '@/store/mutations'
 import { ActionTypes } from '@/store/actions'
 
 export default defineComponent({
@@ -43,6 +41,7 @@ export default defineComponent({
     const toggleCompletion = () => {
       store.dispatch(ActionTypes.UpdateTodoEntry, {
         id: props.id,
+        text: props.text,
         completed: !props.completed
       })
     }
