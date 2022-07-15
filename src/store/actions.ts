@@ -1,11 +1,13 @@
 import { ActionContext, ActionTree } from 'vuex'
 import { Mutations, MutationType } from './mutations'
 import { State, TodoEntry } from './state'
+import HttpClient from '../http/http-client';
 
 export enum ActionTypes {
   GetTodoList = 'GET_TODO_LIST',
   UpdateTodoEntry = 'UPDATE_TODO_ENTRY',
-  DeleteTodoEntry = 'DELETE_TODO_ENTRY'
+  DeleteTodoEntry = 'DELETE_TODO_ENTRY',
+  CreateTodoEntry = 'CREATE_TODO_ENTRY'
 }
 
 type ActionAugments = Omit<ActionContext<State, State>, 'commit'> & {
@@ -21,35 +23,59 @@ export type Actions = {
     context: ActionAugments,
     TodoEntry: Partial<TodoEntry> & { id: number }
   ): void
+  [ActionTypes.CreateTodoEntry](
+    context: ActionAugments,
+    TodoEntry: TodoEntry
+  ): void
   [ActionTypes.DeleteTodoEntry](
     context: ActionAugments,
     id: number 
   ): void
 }
   
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-  
 export const actions: ActionTree<State, State> & Actions = {
   async [ActionTypes.GetTodoList]({ commit }) {
     commit(MutationType.SetLoading, true)
 
-    await sleep(1000)
+    const response = await HttpClient.get("/list")
+    if (response.status === 200) {
+      commit(MutationType.SetTodoList, <TodoEntry[]>response.data)
+    }
 
     commit(MutationType.SetLoading, false)
-    commit(MutationType.SetTodoList, [
-      {
-        id: 1,
-        text: 'Create an app',
-        completed: true
-      }
-    ])
   },
   async [ActionTypes.UpdateTodoEntry]({ commit }, TodoEntry) {
-    commit(MutationType.UpdateTodoEntry, TodoEntry)
+    commit(MutationType.SetLoading, true)
+
+    const response = await HttpClient.post("/update", TodoEntry )
+    if (response.status === 200) {
+      commit(MutationType.UpdateTodoEntry, <TodoEntry>response.data)
+    }
+
+    commit(MutationType.SetLoading, false)
+  },
+
+  async [ActionTypes.CreateTodoEntry]({ commit }, TodoEntry) {
+
+    commit(MutationType.SetLoading, true)
+
+    const response = await HttpClient.post("/add", TodoEntry )
+    if (response.status === 200) {
+      commit(MutationType.CreateTodoEntry, <TodoEntry>response.data)
+    }
+
+    commit(MutationType.SetLoading, false)
   },
 
   async [ActionTypes.DeleteTodoEntry]({ commit }, id) {
-    commit(MutationType.DeleteTodoEntry, id)
+    commit(MutationType.SetLoading, true)
+
+    const response = await HttpClient.post("/delete", {id: id})
+    if (response.status === 200) {
+      commit(MutationType.DeleteTodoEntry, id)
+    }
+
+    commit(MutationType.SetLoading, false)
   }
 }
   
