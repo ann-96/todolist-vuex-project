@@ -2,15 +2,15 @@ import { GetterTree } from 'vuex'
 import { State } from './state'
 
 export type Getters = {
-    completedCount(state: State): number
-    totalCount(state: State): number
+  completedCount(state: State): number
+  totalCount(state: State): number
 }
 
 export const getters: GetterTree<State, State> & Getters = {
   completedCount(state) {
-    return state.TodoList.filter(i => i.completed).length
+    return state.pages.completedCount
   },
   totalCount(state) {
-    return state.TodoList.length
+    return state.pages.count
   }
 }

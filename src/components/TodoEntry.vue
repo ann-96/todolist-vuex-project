@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex TodoList-center bg-white rounded-md shadow-md m-2 p-1 border-4"
+    class="flex text-center bg-white rounded-md shadow-md m-2 p-1 border-4"
     :class="completed ? 'border-green-500' : 'border-white'"
   >
     <div class="flex-shrink-0 m-1 ml-3 align-middle">
