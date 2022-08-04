@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex text-center bg-white rounded-md shadow-md m-2 p-1 border-4">
+    class="flex text-center bg-white rounded-md shadow-md m-2 p-1 border-4 bottom-pagination">
     <div v-if="currentPage>0">      
       <button 
         type="button" 
@@ -31,7 +31,7 @@ export default defineComponent({
     currentPage: { type: Number, required: true },
     maxPage: { type: Number, required: true }
   },
-  setup(props) {
+  setup() {
     const store = useStore()
 
     const previousPage = () => {
@@ -46,3 +46,12 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+.bottom-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: center;
+}
+</style>

@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex text-center bg-white rounded-md shadow-md m-2 p-1 border-4"
-    :class="completed ? 'border-green-500' : 'border-white'"
-  >
+  <div class="flex text-center bg-white rounded-md shadow-md m-2 p-1 border-4 entry">
     <div class="flex-shrink-0 m-1 ml-3 align-middle">
       <input
         type="checkbox"
@@ -54,3 +51,14 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+.entry {
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 4px;
+  box-shadow: 0 0 10px #ececec;
+  text-align: left;
+  padding: 2rem;
+}
+</style>

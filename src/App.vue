@@ -18,7 +18,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="container mx-auto mt-4">
+  <div class="container mx-auto mt-4 dash_main">
     <h1 class="text-3xl text-center p-2 font-bold">
       Vue 3+Vuex Todo List App
     </h1>
@@ -37,3 +37,12 @@ export default defineComponent({
     </div>
   </div>
 </template>
+
+<style scoped>
+.dash_main {
+  background: #fafafa;
+  flex: 1 1 100%;
+  margin: 0;
+  position: relative;
+}
+</style>

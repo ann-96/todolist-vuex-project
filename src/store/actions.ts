@@ -3,7 +3,6 @@ import { Mutations, MutationType } from './mutations'
 import { State, TodoEntry, Pages } from './state'
 import { useStore } from '@/store'
 import HttpClient from '../http/http-client';
-import { useSSRContext } from 'vue';
 
 export enum ActionTypes {
   GetTodoList = 'GET_TODO_LIST',
