@@ -1,11 +1,14 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted } from 'vue'
+
+import CompletedCount from './components/CompletedCount.vue'
+import DropDownList from './components/DropDownList.vue'
 import NewTodoEntry from './components/NewTodoEntry.vue'
 import TodoList from './components/TodoList.vue'
 import { useStore } from './store'
 import { ActionTypes } from './store/actions'
 export default defineComponent({
-  components: { TodoList, NewTodoEntry },
+  components: { CompletedCount, TodoList, NewTodoEntry, DropDownList },
   setup() {
     const store = useStore()
     const loading = computed(() => store.state.loading)
@@ -29,9 +32,11 @@ export default defineComponent({
       </p>
     </div>
     <div class="text-center" v-else>
-      <p class="mt-2">
-        {{ completedCount }} of {{ totalCount }} completed.
-      </p>
+      <CompletedCount
+        v-bind:completedCount="completedCount"
+        v-bind:totalCount    ="totalCount"
+      />
+      <DropDownList />
       <NewTodoEntry />
       <TodoList />
     </div>

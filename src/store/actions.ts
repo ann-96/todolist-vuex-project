@@ -1,6 +1,6 @@
 import { ActionContext, ActionTree } from 'vuex'
 import { Mutations, MutationType } from './mutations'
-import { State, TodoEntry, Pages } from './state'
+import { State, TodoEntry, Pages, TodoEntryLocal } from './state'
 import { useStore } from '@/store'
 import HttpClient from '../http/http-client';
 
@@ -24,11 +24,11 @@ export type Actions = {
   [ActionTypes.GetTodoList](context: ActionAugments): void
   [ActionTypes.UpdateTodoEntry](
     context: ActionAugments,
-    TodoEntry: Partial<TodoEntry> & { id: number }
+    TodoEntry: TodoEntryLocal
   ): void
   [ActionTypes.CreateTodoEntry](
     context: ActionAugments,
-    TodoEntry: TodoEntry
+    todoEntry: TodoEntry
   ): void
   [ActionTypes.DeleteTodoEntry](
     context: ActionAugments,
@@ -42,12 +42,12 @@ export const actions: ActionTree<State, State> & Actions = {
   async [ActionTypes.GetTodoList]({ commit }) {
     commit(MutationType.SetLoading, true)
 
-    const recordsOnPage = 5
+    const recordsOnPage = useStore().state.maxOnPage
     const currentPage = useStore().state.currentPage
 
     const response = await HttpClient.get(`/list?start=${recordsOnPage*currentPage}&count=${recordsOnPage}`)
     if (response.status === 200) {
-      commit(MutationType.SetTodoList, <TodoEntry[]>response.data.list)
+      commit(MutationType.SetTodoList, <TodoEntryLocal[]>response.data.list)
 
       const pages = <Pages>{
         count:         response.data.count,
@@ -60,15 +60,31 @@ export const actions: ActionTree<State, State> & Actions = {
       commit(MutationType.SetMaxPage, maxPage)
       
     }
-
     commit(MutationType.SetLoading, false)
   },
-  async [ActionTypes.UpdateTodoEntry]({ commit }, TodoEntry) {
+  async [ActionTypes.UpdateTodoEntry]({ commit }, todoEntry) {
     commit(MutationType.SetLoading, true)
 
-    const response = await HttpClient.post("/update", TodoEntry )
+    const response = await HttpClient.post("/update", <TodoEntry>todoEntry )
     if (response.status === 200) {
-      commit(MutationType.UpdateTodoEntry, <TodoEntry>response.data)
+      const data = <TodoEntryLocal>response.data
+      data.edit = todoEntry.edit
+
+      const oldEntry = <TodoEntryLocal>useStore().state.TodoList.find(elem => elem.id == data.id)
+      if (oldEntry.completed !== todoEntry.completed) {
+        const pages = <Pages>{
+          count:         useStore().state.pages.count,
+          completedCount:useStore().state.pages.completedCount  
+        }
+        if (todoEntry.completed) {
+          pages.completedCount++
+        } else {
+          pages.completedCount--
+        }
+        commit(MutationType.SetCompletedCount, pages)
+      }
+
+      commit(MutationType.UpdateTodoEntry, data)
     }
 
     commit(MutationType.SetLoading, false)

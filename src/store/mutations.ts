@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex'
-import { State, TodoEntry, Pages } from './state'
+import { State, Pages, TodoEntryLocal } from './state'
 
 export enum MutationType {
     CreateTodoEntry = 'CREATE_TODO_ENTRY',
@@ -9,21 +9,23 @@ export enum MutationType {
     SetLoading = 'SET_LOADING',
     SetPage = 'SET_PAGE',
     SetMaxPage = 'SET_MAX_PAGE',
-    SetCompletedCount = 'SET_COMPLETED_COUNT'
+    SetCompletedCount = 'SET_COMPLETED_COUNT',
+    SetEntriesOnPage = 'SET_ENTRIES_ON_PAGE',
 }
 
 export type Mutations = {
-  [MutationType.CreateTodoEntry](state: State, TodoEntry: TodoEntry): void
+  [MutationType.CreateTodoEntry](state: State, TodoEntry: TodoEntryLocal): void
   [MutationType.DeleteTodoEntry](state: State, id: number): void
-  [MutationType.SetTodoList](state: State, TodoList: TodoEntry[]): void
+  [MutationType.SetTodoList](state: State, TodoList: TodoEntryLocal[]): void
   [MutationType.UpdateTodoEntry](
     state: State,
-    TodoEntry: Partial<TodoEntry> & { id: number }
+    TodoEntry: TodoEntryLocal
   ): void
   [MutationType.SetLoading](state: State, value: boolean): void
   [MutationType.SetPage](state: State, val: number): void
   [MutationType.SetMaxPage](state: State, val: number): void
-  [MutationType.SetCompletedCount](state: State, data: Pages): void 
+  [MutationType.SetCompletedCount](state: State, data: Pages): void
+  [MutationType.SetEntriesOnPage](state: State, val: number): void
 }
 
 export const mutations: MutationTree<State> & Mutations = {
@@ -59,5 +61,8 @@ export const mutations: MutationTree<State> & Mutations = {
     [MutationType.SetCompletedCount](state, pages) {
       state.pages.count = Math.floor(pages.count)
       state.pages.completedCount = Math.floor(pages.completedCount)
+    },
+    [MutationType.SetEntriesOnPage](state, val) {
+      state.maxOnPage = Math.floor(val)
     }
   }
