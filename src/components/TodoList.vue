@@ -20,9 +20,12 @@ export default defineComponent({
         maxPage: computed(() => store.state.maxPage),
         currentPage: computed(() => store.state.currentPage),
     }
-    Pages.maxPage
     const TodoList = computed(() => store.state.TodoList)
-    return { TodoList, Pages }
+
+    const completedCount = computed(() => store.getters.completedCount)
+    const totalCount = computed(() => store.getters.totalCount)
+
+    return { TodoList, Pages, completedCount, totalCount }
   }
 })
 </script>

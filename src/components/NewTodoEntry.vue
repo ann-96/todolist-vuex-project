@@ -1,6 +1,6 @@
 <template>
   <form class="my-4" @submit.prevent="createTask">
-    <div class="mx-auto flex TodoList-center bg-white p-2 rounded-md shadow-md">
+    <div class="mx-auto flex text-center bg-white p-2 rounded-md shadow-md">
       <div class="flex-grow m-1 ml-3">
         <input
           v-model="text"
