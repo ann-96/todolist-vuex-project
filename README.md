@@ -4,7 +4,7 @@ It was created to learn and practice and to showcase what I have learned so far.
 You can find the back end(written in Go) here:
 <a href="https://github.com/ann-96/todolist-backend/">link</a>
 <br>
-The example of project working can be found at:
+The example of the project working can be found at:
 <a href="http://xanderweb.com:9999/">http://xanderweb.com:9999/</a>
 CI-CD scripts repository might be coming soon.
 
