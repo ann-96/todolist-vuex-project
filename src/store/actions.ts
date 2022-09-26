@@ -2,7 +2,8 @@ import { ActionContext, ActionTree } from 'vuex'
 import { Mutations, MutationType } from './mutations'
 import { State, TodoEntry, Pages, TodoEntryLocal } from './state'
 import { useStore } from '@/store'
-import HttpClient from '../http/http-client';
+import { authClient, clientWithAuth } from '../http/http-client';
+import { notify } from "@kyvg/vue3-notification";
 
 export enum ActionTypes {
   GetTodoList = 'GET_TODO_LIST',
@@ -10,7 +11,9 @@ export enum ActionTypes {
   DeleteTodoEntry = 'DELETE_TODO_ENTRY',
   CreateTodoEntry = 'CREATE_TODO_ENTRY',
   PreviousPage = 'PREVIOUS_PAGE',
-  NextPage = 'NEXT_PAGE'
+  NextPage = 'NEXT_PAGE',
+  LogIn = 'LOG_IN',
+  Register = 'REGISTER'
 }
 
 type ActionAugments = Omit<ActionContext<State, State>, 'commit'> & {
@@ -36,6 +39,8 @@ export type Actions = {
   ): void
   [ActionTypes.PreviousPage](context: ActionAugments): void
   [ActionTypes.NextPage](context: ActionAugments): void
+  [ActionTypes.LogIn](context: ActionAugments): void
+  [ActionTypes.Register](context: ActionAugments): void
 }
   
 export const actions: ActionTree<State, State> & Actions = {
@@ -44,8 +49,8 @@ export const actions: ActionTree<State, State> & Actions = {
 
     const recordsOnPage = useStore().state.maxOnPage
     const currentPage = useStore().state.currentPage
-
-    const response = await HttpClient.get(`/list?start=${recordsOnPage*currentPage}&count=${recordsOnPage}`)
+    try{
+    const response = await clientWithAuth(useStore().state.uuid).get(`/list?start=${recordsOnPage*currentPage}&count=${recordsOnPage}`)
     if (response.status === 200) {
       commit(MutationType.SetTodoList, <TodoEntryLocal[]>response.data.list)
 
@@ -59,13 +64,31 @@ export const actions: ActionTree<State, State> & Actions = {
       const maxPage = count/recordsOnPage - ((count%recordsOnPage > 0) ? 0 : 1)
       commit(MutationType.SetMaxPage, maxPage)
       
+    } else if (response.status === 401) {
+      notify({
+        title:"Authorization",
+        text: "You were logged out",
+      });
+      commit(MutationType.SetUUID, "")
+    } else {
+      notify({
+        title:`Error code:${response.status}`,
+        text: `The server returned an error.\n <br> data: ${response.data}`,
+      });
     }
+  } catch(err) {
+    notify({
+      title:`Error while making the request: ${(<Error>err).name}`,
+      text: (<Error>err).message
+    });
+  }
     commit(MutationType.SetLoading, false)
   },
+
   async [ActionTypes.UpdateTodoEntry]({ commit }, todoEntry) {
     commit(MutationType.SetLoading, true)
-
-    const response = await HttpClient.post("/update", <TodoEntry>todoEntry )
+    try {
+    const response = await clientWithAuth(useStore().state.uuid).post("/update", <TodoEntry>todoEntry )
     if (response.status === 200) {
       const data = <TodoEntryLocal>response.data
       data.edit = todoEntry.edit
@@ -85,32 +108,79 @@ export const actions: ActionTree<State, State> & Actions = {
       }
 
       commit(MutationType.UpdateTodoEntry, data)
+    }  else if (response.status === 401) {
+      notify({
+        title:"Authorization",
+        text: "You were logged out",
+      });
+      commit(MutationType.SetUUID, "")
+    } else {
+      notify({
+        title:`Error code:${response.status}`,
+        text: `The server returned an error.\n <br> data: ${response.data}`,
+      });
     }
-
+  } catch(err) {
+    notify({
+      title:`Error while making the request: ${(<Error>err).name}`,
+      text: (<Error>err).message
+    });
+  }
     commit(MutationType.SetLoading, false)
   },
 
   async [ActionTypes.CreateTodoEntry]({ commit, dispatch }, TodoEntry) {
-
     commit(MutationType.SetLoading, true)
-
-    const response = await HttpClient.post("/add", TodoEntry )
+    try {
+    const response = await clientWithAuth(useStore().state.uuid).post("/add", TodoEntry )
     if (response.status === 200) {
       dispatch(ActionTypes.GetTodoList)
+    }  else if (response.status === 401) {
+      notify({
+        title:"Authorization",
+        text: "You were logged out",
+      });
+      commit(MutationType.SetUUID, "")
+    } else {
+      notify({
+        title:`Error code:${response.status}`,
+        text: `The server returned an error.\n <br> data: ${response.data}`,
+      });
     }
-
+  } catch(err) {
+    notify({
+      title:`Error while making the request: ${(<Error>err).name}`,
+      text: (<Error>err).message
+    });
+  }
     commit(MutationType.SetLoading, false)
   },
 
   async [ActionTypes.DeleteTodoEntry]({ commit, dispatch }, id) {
     commit(MutationType.SetLoading, true)
-
-    const response = await HttpClient.post("/delete", {id: id})
+    try {
+    const response = await clientWithAuth(useStore().state.uuid).post("/delete", {id: id})
     if (response.status === 200) {
       commit(MutationType.DeleteTodoEntry, id)      
       dispatch(ActionTypes.GetTodoList)
+    }  else if (response.status === 401) {
+      notify({
+        title:"Authorization",
+        text: "You were logged out",
+      });
+      commit(MutationType.SetUUID, "")
+    } else {
+      notify({
+        title:`Error code:${response.status}`,
+        text: `The server returned an error.\n <br> data: ${response.data}`,
+      });
     }
-
+  } catch(err) {
+    notify({
+      title:`Error while making the request: ${(<Error>err).name}`,
+      text: (<Error>err).message
+    });
+  }
     commit(MutationType.SetLoading, false)
   },
 
@@ -132,6 +202,65 @@ export const actions: ActionTree<State, State> & Actions = {
     dispatch(ActionTypes.GetTodoList)
 
     commit(MutationType.SetLoading, false)
-  }
+  },
+
+  async [ActionTypes.LogIn]({ commit, dispatch }) {
+    commit(MutationType.SetLoading, true)
+    try {
+      const response = await authClient.post("/login", {
+        "login":    useStore().state.authdata.login,
+        "password": useStore().state.authdata.password
+      })
+      if (response.status === 200) {
+        commit(MutationType.SetUUID, response.data)
+        dispatch(ActionTypes.GetTodoList)
+        notify({
+          title:"Login",
+          text: "You successfully logged in",
+        });
+      } else {
+        notify({
+          title:`Error code:${response.status}`,
+          text: `The server returned an error.\n <br> data: ${response.data}`,
+        });
+      }
+    } catch(err) {
+      notify({
+        title:`Error while making the request: ${(<Error>err).name}`,
+        text: (<Error>err).message
+      });
+    }
+
+    commit(MutationType.SetLoading, false)
+  },
+
+  async [ActionTypes.Register]({ commit, dispatch }) {
+    commit(MutationType.SetLoading, true)
+    try {
+    const response = await authClient.post("/register", {
+      login:     useStore().state.authdata.login,
+      password:  useStore().state.authdata.password,
+      password2: useStore().state.authdata.password2
+    })
+    if (response.status === 204) {
+      dispatch(ActionTypes.LogIn)
+      notify({
+        title:"Registration",
+        text: "You successfully registered an account",
+      });
+    } else {
+      notify({
+        title:`Error code:${response.status}`,
+        text: `The server returned an error.\n <br> data: ${response.data}`,
+      });
+    }
+  } catch(err) {
+    notify({
+    title:`Error while making the request: ${(<Error>err).name}`,
+    text: (<Error>err).message
+  });
+}
+    commit(MutationType.SetLoading, false)
+  },
 }
   

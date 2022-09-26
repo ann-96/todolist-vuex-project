@@ -1,5 +1,6 @@
 import { MutationTree } from 'vuex'
-import { State, Pages, TodoEntryLocal } from './state'
+import { State, Pages, TodoEntryLocal, authData } from './state'
+import { useCookies } from "vue3-cookies"
 
 export enum MutationType {
     CreateTodoEntry = 'CREATE_TODO_ENTRY',
@@ -11,6 +12,8 @@ export enum MutationType {
     SetMaxPage = 'SET_MAX_PAGE',
     SetCompletedCount = 'SET_COMPLETED_COUNT',
     SetEntriesOnPage = 'SET_ENTRIES_ON_PAGE',
+    SetUUID = 'SET_UUID',
+    SetAuthData = 'SET_AUTH_DATA',
 }
 
 export type Mutations = {
@@ -26,6 +29,8 @@ export type Mutations = {
   [MutationType.SetMaxPage](state: State, val: number): void
   [MutationType.SetCompletedCount](state: State, data: Pages): void
   [MutationType.SetEntriesOnPage](state: State, val: number): void
+  [MutationType.SetUUID](state: State, val: string): void
+  [MutationType.SetAuthData](state: State, data: authData): void
 }
 
 export const mutations: MutationTree<State> & Mutations = {
@@ -64,5 +69,12 @@ export const mutations: MutationTree<State> & Mutations = {
     },
     [MutationType.SetEntriesOnPage](state, val) {
       state.maxOnPage = Math.floor(val)
-    }
+    },
+    [MutationType.SetUUID](state, uuid) {
+      state.uuid = uuid
+      useCookies().cookies.set("auth", uuid)
+    },
+    [MutationType.SetAuthData](state, data) {
+      state.authdata = data
+    },
   }
