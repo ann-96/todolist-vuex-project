@@ -12,6 +12,12 @@ export type Pages = {
   completedCount: number
 }
 
+export type authData = {
+  login:       string
+  password:    string
+  password2:   string
+}
+
 export type State = {
   loading:     boolean
   TodoList:    TodoEntryLocal[]
@@ -19,6 +25,8 @@ export type State = {
   currentPage: number
   maxOnPage:   number
   pages:       Pages
+  uuid:        string
+  authdata:    authData
 }
 
 export const state: State = {
@@ -30,5 +38,11 @@ export const state: State = {
   pages: {
     completedCount: 0,
     count:          0
-  }
+  },
+  uuid: "",
+  authdata : {
+    login:      "",
+    password:   "",
+    password2:  ""
+  },
 }
