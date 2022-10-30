@@ -14,7 +14,7 @@ export const clientWithAuth = (token:string) => {
     headers: {
       "Accept": "application/json",
       "Content-type": "application/json",
-      "auth" : token,
+      "Authorization" : token,
     },
   });
 }

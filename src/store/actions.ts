@@ -2,6 +2,7 @@ import { ActionContext, ActionTree } from 'vuex'
 import { Mutations, MutationType } from './mutations'
 import { State, TodoEntry, Pages, TodoEntryLocal } from './state'
 import { useStore } from '@/store'
+import { useCookies } from "vue3-cookies"
 import { authClient, clientWithAuth } from '../http/http-client';
 import { notify } from "@kyvg/vue3-notification";
 
@@ -12,8 +13,9 @@ export enum ActionTypes {
   CreateTodoEntry = 'CREATE_TODO_ENTRY',
   PreviousPage = 'PREVIOUS_PAGE',
   NextPage = 'NEXT_PAGE',
-  LogIn = 'LOG_IN',
-  Register = 'REGISTER'
+  Login = 'LOGIN',
+  Register = 'REGISTER',
+  Logout = 'LOGOUT'
 }
 
 type ActionAugments = Omit<ActionContext<State, State>, 'commit'> & {
@@ -39,8 +41,9 @@ export type Actions = {
   ): void
   [ActionTypes.PreviousPage](context: ActionAugments): void
   [ActionTypes.NextPage](context: ActionAugments): void
-  [ActionTypes.LogIn](context: ActionAugments): void
+  [ActionTypes.Login](context: ActionAugments): void
   [ActionTypes.Register](context: ActionAugments): void
+  [ActionTypes.Logout](context: ActionAugments): void
 }
   
 export const actions: ActionTree<State, State> & Actions = {
@@ -204,7 +207,7 @@ export const actions: ActionTree<State, State> & Actions = {
     commit(MutationType.SetLoading, false)
   },
 
-  async [ActionTypes.LogIn]({ commit, dispatch }) {
+  async [ActionTypes.Login]({ commit, dispatch }) {
     commit(MutationType.SetLoading, true)
     try {
       const response = await authClient.post("/login", {
@@ -237,30 +240,58 @@ export const actions: ActionTree<State, State> & Actions = {
   async [ActionTypes.Register]({ commit, dispatch }) {
     commit(MutationType.SetLoading, true)
     try {
-    const response = await authClient.post("/register", {
-      login:     useStore().state.authdata.login,
-      password:  useStore().state.authdata.password,
-      password2: useStore().state.authdata.password2
-    })
-    if (response.status === 204) {
-      dispatch(ActionTypes.LogIn)
+      const response = await authClient.post("/register", {
+        login:     useStore().state.authdata.login,
+        password:  useStore().state.authdata.password,
+        password2: useStore().state.authdata.password2
+      })
+      if (response.status === 201) {
+        dispatch(ActionTypes.Login)
+        notify({
+          title:"Registration",
+          text: "You successfully registered an account",
+        });
+      } else {
+        notify({
+          title:`Error code:${response.status}`,
+          text: `The server returned an error.\n <br> data: ${response.data}`,
+        });
+      }
+    } catch(err) {
       notify({
-        title:"Registration",
-        text: "You successfully registered an account",
-      });
-    } else {
-      notify({
-        title:`Error code:${response.status}`,
-        text: `The server returned an error.\n <br> data: ${response.data}`,
+        title:`Error while making the request: ${(<Error>err).name}`,
+        text: (<Error>err).message
       });
     }
-  } catch(err) {
-    notify({
-    title:`Error while making the request: ${(<Error>err).name}`,
-    text: (<Error>err).message
-  });
-}
     commit(MutationType.SetLoading, false)
   },
+
+  async [ActionTypes.Logout]({ commit }) {
+    commit(MutationType.SetLoading, true)
+    const { cookies } = useCookies()
+
+    try {
+      const response = await authClient.post("/logout")
+      if (response.status === 204) {
+        notify({
+          title:"Logout",
+          text: "You successfully logged out",
+        });
+      } else {
+        notify({
+          title:"Logout",
+          text: `You successfully logged out but the server returned code ${response.status}`,
+        });
+      }
+    } catch(err) {
+      notify({
+        title:`Error while making the request: ${(<Error>err).name}`,
+        text: (<Error>err).message
+      });
+    }
+
+      commit(MutationType.SetUUID, "")
+      cookies.set("Authorization", "null")
+      commit(MutationType.SetLoading, false)
+  },
 }
-  

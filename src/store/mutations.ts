@@ -72,7 +72,7 @@ export const mutations: MutationTree<State> & Mutations = {
     },
     [MutationType.SetUUID](state, uuid) {
       state.uuid = uuid
-      useCookies().cookies.set("auth", uuid)
+      useCookies().cookies.set("Authorization", uuid)
     },
     [MutationType.SetAuthData](state, data) {
       state.authdata = data
