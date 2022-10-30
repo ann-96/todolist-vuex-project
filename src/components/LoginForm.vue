@@ -62,7 +62,7 @@ export default defineComponent({
         password:password.value,
         password2:password2.value
       })
-      store.dispatch(ActionTypes.LogIn)
+      store.dispatch(ActionTypes.Login)
     }
 
     const Register = () => {

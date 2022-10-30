@@ -32,7 +32,10 @@ export default defineComponent({
     })
     const completedCount = computed(() => store.getters.completedCount)
     const totalCount = computed(() => store.getters.totalCount)
-    return { loading, isAutorized, completedCount, totalCount, cookies }
+    const logout = () => {
+      store.dispatch(ActionTypes.Logout)
+    }
+    return { loading, isAutorized, completedCount, totalCount, cookies, logout }
   }
 })
 </script>
@@ -63,6 +66,12 @@ export default defineComponent({
       <DropDownList />
       <NewTodoEntry />
       <TodoList />
+      <button 
+        type="button" 
+        class="btn btn-info"
+        @click="logout()">
+        Logout
+      </button>
     </div>
   </div>
 </template>
